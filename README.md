@@ -5,7 +5,7 @@
 You control Zara, moving left and right to catch only the fans 🌀 while avoiding AC units ❄️ and heaters 🔥.  
 Rack up as many points as you can before catching the wrong thing!  
 
-All game assets were created using **ChatGPT image generation (April 2025)**.
+All game assets were created using **ChatGPT image generation**.
 
 > This game is **not affiliated with or endorsed by OnlyFans or its parent company**.  
 > It was made purely for fun to demonstrate the creative capabilities of **ChatGPT**.  
@@ -25,6 +25,11 @@ All game assets were created using **ChatGPT image generation (April 2025)**.
 - 🎮 **Play as Zara**, dodging and catching falling objects.
 - 🌀 **Catch fans** to gain points.
 - ❌ **Avoid ACs and heaters** – one wrong catch ends the game.
+- 💪 **Collect power-ups** for special abilities:
+    - Cyan: Shield protection
+    - Yellow: Slow motion
+    - Magenta: Double points
+    - Green: Magnet for fans
 - 📈 **Increasing difficulty** – objects fall faster as time progresses.
 - 🔊 **Sound effects** – satisfying audio cues for good and bad catches.
 - 💾 **High score** tracking saved locally.
@@ -48,7 +53,8 @@ pip install pygame
 
 | File                   | Description                                  |
 |------------------------|----------------------------------------------|
-| `onlyfanz_game.py`     | Main game script                             |
+| `onlyfanz_game_v1.py`     | Main game script for version 1            |
+| `onlyfanz_game_v2.py`     | Main game script for version 2            |
 | `zara.png`             | Player sprite with transparent background    |
 | `fan.png`              | Good object to catch                         |
 | `ac.png`               | Bad object to avoid (AC unit)                |
@@ -65,13 +71,18 @@ pip install pygame
 2. Run the game:
 
 ```bash
-python onlyfanz_game.py
+python onlyfanz_game_v2.py
 ```
 
 3. Use **←** and **→** arrow keys to move Zara left and right.
-4. Catch **fans** to score points.  
-5. Avoid **AC units** and **heaters** – if you catch one, it's game over!
-6. Your **high score** will be saved automatically.
+4. Catch **fans** to score points.
+5. Collect **power-ups** for special abilities:
+        Cyan: Shield protection
+        Yellow: Slow motion
+        Magenta: Double points
+        Green: Magnet for fans
+6. Avoid **AC units** and **heaters** – if you catch one, it's game over!
+7. Your **high score** will be saved automatically.
 
 ---
 
