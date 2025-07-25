@@ -186,8 +186,39 @@ class FallingObject:
         rotated_rect = rotated_image.get_rect(center=self.rect.center)
         surface.blit(rotated_image, rotated_rect)
 
-def check_collision(obj_rect, player_rect):
-    return obj_rect.colliderect(player_rect)
+def check_collision(obj_rect, player_rect, obj_image=None, player_image=None):
+    """
+    Check pixel-perfect collision between two objects.
+    Only non-transparent pixels (alpha > 127) count as collision.
+    Falls back to rectangle collision if images are not provided.
+    """
+    if not obj_rect.colliderect(player_rect):
+        return False
+    
+    if obj_image is None or player_image is None:
+        return True
+    
+    # Calculate overlap area
+    overlap_rect = obj_rect.clip(player_rect)
+    
+    for x in range(overlap_rect.width):
+        for y in range(overlap_rect.height):
+            # Calculate pixel positions in both images
+            obj_x = overlap_rect.x - obj_rect.x + x
+            obj_y = overlap_rect.y - obj_rect.y + y
+            player_x = overlap_rect.x - player_rect.x + x
+            player_y = overlap_rect.y - player_rect.y + y
+            
+            if (0 <= obj_x < obj_image.get_width() and 0 <= obj_y < obj_image.get_height() and
+                0 <= player_x < player_image.get_width() and 0 <= player_y < player_image.get_height()):
+                
+                obj_alpha = obj_image.get_at((obj_x, obj_y))[3]
+                player_alpha = player_image.get_at((player_x, player_y))[3]
+                
+                if obj_alpha > 127 and player_alpha > 127:
+                    return True
+    
+    return False
 
 def create_particles(x, y, color, count=10):
     particles = []
@@ -310,7 +341,7 @@ def main_game():
                 elif obj.rect.x > player_x:
                     obj.rect.x -= 2
 
-            if check_collision(obj.rect, player_rect):
+            if check_collision(obj.rect, player_rect, obj.image, zara_img):
                 # Collision
                 if obj.obj_type == "fan":
                     # Good catch
