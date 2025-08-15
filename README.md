@@ -7,7 +7,7 @@ Rack up as many points as you can before catching the wrong thing!
 
 All game assets were created using **ChatGPT image generation**.
 
-> This game is **not affiliated with or endorsed by OnlyFans or its parent company**.  
+> This game is **not affiliated with or endorsed by OnlyFans, OFTV, Fenix International Ltd or Fenix Internet LLC**.  
 > It was made purely for fun to demonstrate the creative capabilities of **ChatGPT**.  
 > This is a non-commercial, entertainment-only project with **no revenue intent**.
 
