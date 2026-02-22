@@ -3,6 +3,14 @@ import random
 import os
 import sys
 import math
+from enum import Enum
+
+
+class PowerUpType(Enum):
+    SHIELD = "shield"
+    SLOW_MOTION = "slow_motion"
+    DOUBLE_POINTS = "double_points"
+    MAGNET = "magnet"
 
 
 # -----------------------------
@@ -30,7 +38,7 @@ INTERVAL_DECREMENT = 50
 # Object types
 GOOD_OBJECTS = ["fan"]           # +1 point if caught
 BAD_OBJECTS = ["ac", "heater"]   # Game over if caught
-POWERUP_OBJECTS = ["shield", "slow_motion", "double_points", "magnet"]  # Power-ups
+POWERUP_OBJECTS = [p.value for p in PowerUpType]  # Power-ups
 ALL_OBJECTS = GOOD_OBJECTS + BAD_OBJECTS + POWERUP_OBJECTS
 
 # Power-up durations (in milliseconds)
@@ -220,12 +228,8 @@ def main_game():
     spawn_interval = OBJECT_SPAWN_INTERVAL
 
     # Power-up system
-    active_powerups = {}
+    active_powerups = {p: False for p in PowerUpType}
     powerup_timers = {}
-    magnet_active = False
-    shield_active = False
-    slow_motion_active = False
-    double_points_active = False
 
     # Particle system
     particles = []
@@ -236,7 +240,7 @@ def main_game():
         dt = clock.tick(FPS)
         
         # Apply slow motion effect
-        if slow_motion_active:
+        if active_powerups[PowerUpType.SLOW_MOTION]:
             dt = dt // 2
         
         screen.fill((200, 220, 255))  # Light background color
@@ -288,14 +292,7 @@ def main_game():
         
         for powerup in expired_powerups:
             del powerup_timers[powerup]
-            if powerup == "shield":
-                shield_active = False
-            elif powerup == "slow_motion":
-                slow_motion_active = False
-            elif powerup == "double_points":
-                double_points_active = False
-            elif powerup == "magnet":
-                magnet_active = False
+            active_powerups[powerup] = False
 
         # 6. Update objects & check collisions
         objects_to_remove = []
@@ -303,7 +300,7 @@ def main_game():
             obj.update()
 
             # Magnet effect
-            if magnet_active and obj.obj_type == "fan":
+            if active_powerups[PowerUpType.MAGNET] and obj.obj_type == "fan":
                 # Move fans towards player
                 if obj.rect.x < player_x:
                     obj.rect.x += 2
@@ -318,7 +315,7 @@ def main_game():
                         collect_sound.play()
                     
                     # Calculate points (with double points power-up)
-                    points = 2 if double_points_active else 1
+                    points = 2 if active_powerups[PowerUpType.DOUBLE_POINTS] else 1
                     score += points
                     
                     # Combo system
@@ -340,16 +337,9 @@ def main_game():
                     # Power-up collected
                     if collect_sound:
                         collect_sound.play()
-                    powerup_timers[obj.obj_type] = current_time
-                    
-                    if obj.obj_type == "shield":
-                        shield_active = True
-                    elif obj.obj_type == "slow_motion":
-                        slow_motion_active = True
-                    elif obj.obj_type == "double_points":
-                        double_points_active = True
-                    elif obj.obj_type == "magnet":
-                        magnet_active = True
+                    powerup_type = PowerUpType(obj.obj_type)
+                    powerup_timers[powerup_type] = current_time
+                    active_powerups[powerup_type] = True
                     
                     # Create particles
                     particles.extend(create_particles(obj.rect.centerx, obj.rect.centery, (255, 255, 0), 20))
@@ -358,16 +348,16 @@ def main_game():
                     
                 else:
                     # Bad catch
-                    if shield_active:
+                    if active_powerups[PowerUpType.SHIELD]:
                         # Shield protects from bad objects
                         if lose_sound:
                             lose_sound.play()
                         particles.extend(create_particles(obj.rect.centerx, obj.rect.centery, (0, 255, 255), 25))
                         objects_to_remove.append(obj)
                         # Remove shield after use
-                        shield_active = False
-                        if "shield" in powerup_timers:
-                            del powerup_timers["shield"]
+                        active_powerups[PowerUpType.SHIELD] = False
+                        if PowerUpType.SHIELD in powerup_timers:
+                            del powerup_timers[PowerUpType.SHIELD]
                     else:
                         # Game over
                         if lose_sound:
@@ -404,7 +394,7 @@ def main_game():
             particle.draw(screen)
 
         # Draw Zara with shield effect
-        if shield_active:
+        if active_powerups[PowerUpType.SHIELD]:
             # Draw shield glow
             shield_surface = pygame.Surface((ZARA_WIDTH + 20, ZARA_HEIGHT + 20), pygame.SRCALPHA)
             pygame.draw.ellipse(shield_surface, (0, 255, 255, 100), (0, 0, ZARA_WIDTH + 20, ZARA_HEIGHT + 20))
@@ -427,25 +417,18 @@ def main_game():
             screen.blit(combo_text, (SCREEN_WIDTH - combo_text.get_width() - 10, 10))
 
         # Power-up indicators
+        powerup_labels = {
+            PowerUpType.SHIELD: ("SHIELD", (0, 255, 255)),
+            PowerUpType.SLOW_MOTION: ("SLOW MOTION", (255, 255, 0)),
+            PowerUpType.DOUBLE_POINTS: ("DOUBLE POINTS", (255, 0, 255)),
+            PowerUpType.MAGNET: ("MAGNET", (0, 255, 0)),
+        }
         y_offset = 40
-        if shield_active:
-            shield_text = tiny_font.render("SHIELD", True, (0, 255, 255))
-            screen.blit(shield_text, (10, y_offset))
-            y_offset += 20
-        
-        if slow_motion_active:
-            slow_text = tiny_font.render("SLOW MOTION", True, (255, 255, 0))
-            screen.blit(slow_text, (10, y_offset))
-            y_offset += 20
-        
-        if double_points_active:
-            double_text = tiny_font.render("DOUBLE POINTS", True, (255, 0, 255))
-            screen.blit(double_text, (10, y_offset))
-            y_offset += 20
-        
-        if magnet_active:
-            magnet_text = tiny_font.render("MAGNET", True, (0, 255, 0))
-            screen.blit(magnet_text, (10, y_offset))
+        for key, (label, color) in powerup_labels.items():
+            if active_powerups[key]:
+                text = tiny_font.render(label, True, color)
+                screen.blit(text, (10, y_offset))
+                y_offset += 20
 
         pygame.display.flip()
 
